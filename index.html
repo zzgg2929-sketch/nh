@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>신용카드 소득공제 시뮬레이터</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 860px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* 상단 배지 */
+        .badge-wrapper {
+            display: flex;
+            justify-content: center;
+        }
+
+        .top-badge {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 헤더 타이틀 */
+        .header {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #111827;
+            margin: 0 0 8px 0;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin: 0;
+        }
+
+        /* 상단 2분할 카드 (결과 & 가이드) */
+        .top-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .top-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .result-card {
+            background: var(--primary-gradient);
+            border-radius: 24px;
+            padding: 28px;
+            color: white;
+            box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .result-card .label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .result-card .amount {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .result-sub-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .rate-pill {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .guide-box {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .guide-box h3 {
+            font-size: 14px;
+            color: #7c3aed;
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .guide-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 13px;
+            color: #334155;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .guide-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-num {
+            background: #f3e8ff;
+            color: #7c3aed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* 조건 세팅하기 박스 */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 900px) {
+            .inputs-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .inputs-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+
+        .input-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .input-box input {
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 700;
+            width: 100%;
+            outline: none;
+            color: var(--text-main);
+            text-align: right;
+        }
+
+        .range-slider {
+            width: 100%;
+            accent-color: #7c3aed;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .range-caption {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* 상세 분석 리포트 */
+        .report-table {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .report-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: var(--text-sub);
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #f1f5f9;
+        }
+
+        .report-row span:last-child {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .report-row.highlight {
+            border-bottom: none;
+            padding-top: 6px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .report-row.highlight span:last-child {
+            color: #7c3aed;
+            font-size: 20px;
+        }
+
+        /* 핵심 포인트 및 맞벌이 부부 절세 팁 */
+        .tip-box {
+            background: #faf5ff;
+            border: 1px solid #e9d5ff;
+            border-radius: 20px;
+            padding: 20px 24px;
+        }
+
+        .tip-box h4 {
+            font-size: 14px;
+            color: #6b21a8;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tip-box ul {
+            margin: 0;
+            padding-left: 18px;
+            font-size: 13px;
+            color: #581c87;
+            line-height: 1.6;
+        }
+
+        .tip-box li {
+            margin-bottom: 6px;
+        }
+
+        .tip-box li:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 상단 배지 -->
+    <div class="badge-wrapper">
+        <div class="top-badge">
+            ✨ 창원 2조 학습조직 스터디
+        </div>
+    </div>
+
+    <!-- 헤더 -->
+    <div class="header">
+        <h1>신용카드 소득공제 시뮬레이터</h1>
+        <p>내 총급여와 결제 수단별 지출에 맞는 최적의 절세 플랜을 슬라이더로 간편하게 확인해보세요!</p>
+    </div>
+
+    <!-- 상단 2분할 카드 (결과 & 가이드) -->
+    <div class="top-grid">
+        <!-- 결과 카드 -->
+        <div class="result-card">
+            <div>
+                <div class="label">올해 예상 소득공제액</div>
+                <div class="amount" id="totalDeductionText">0 원</div>
+            </div>
+            <div class="result-sub-info">
+                <span class="rate-pill">신용 15%</span>
+                <span class="rate-pill">직불/현금 30%</span>
+                <span class="rate-pill">문화 30%</span>
+                <span class="rate-pill">대중교통 80%</span>
+                <span class="rate-pill">전통시장 40%</span>
+            </div>
+        </div>
+
+        <!-- 스마트 가이드 -->
+        <div class="guide-box">
+            <h3>💡 스마트 소비 가이드</h3>
+            <div class="guide-step">
+                <div class="step-num">1</div>
+                <div>총급여 25% 문턱까지는 혜택이 많은 <b>신용카드</b>를 먼저 쓰세요!</div>
+            </div>
+            <div class="guide-step">
+                <div class="step-num">2</div>
+                <div>문턱 초과분부터는 공제율 높은 <b>직불카드·현금영수증(30%)</b>을 집중 공략하세요!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 조건 세팅하기 섹션 -->
+    <div class="section-card">
+        <div class="section-title">
+            ⚙️ 조건 세팅하기
+        </div>
+        
+        <div class="inputs-grid">
+            <!-- 연간 총급여액 (최대 10억) -->
+            <div class="input-group">
+                <label>연간 총급여액 (최대 10억)</label>
+                <div class="input-box">
+                    <input type="text" id="salaryInput" value="50,000,000" oninput="formatNumber(this); calculate();">
+                    <span style="font-size:13px; color:#64748b; margin-left:4px;">원</span>
+                </div>
+                <input type="range" class="range-slider" id="salaryRange" min="20000000" max="1000000000" step="1000000" value="50000000" oninput="syncInput('salary', this.value)">
+                <div class="range-caption">직접입력 최대 10억 원</div>
+            </div>
+
+            <!-- 신용카드 (15%) -->
+            <div class="input-group">
+                <label>신용카드 사용액 (15%)</label>
+                <div class="input-box">
+                    <input type="text" id="creditInput" value="300,000,000" oninput="formatNumber(this); calculate();">
+                    <span style="font-size:13px; color:#64748b; margin-left:4px;">원</span>
+                </div>
+                <input type="range" class="range-slider" id="creditRange" min="0" max="300000000" step="1000000" value="300000000" oninput="syncInput('credit', this.value)">
+                <div class="range-caption">기본 신용카드 (최대 3억)</div>
+            </div>
+
+            <!-- 직불카드/현금영수증 (30%) -->
+            <div class="input-group">
+                <label>직불카드/현금영수증 (30%)</label>
+                <div class="input-box">
+                    <input type="text" id="checkInput" value="20,000,000" oninput="formatNumber(this); calculate();">
+                    <span style="font-size:13px; color:#64748b; margin-left:4px;">원</span>
+                </div>
+                <input type="range" class="range-slider" id="checkRange" min="0" max="150000000" step="1000000" value="20000000" oninput="syncInput('check', this.value)">
+                <div class="range-caption">체크카드 및 현금영수증</div>
+            </div>
+
+            <!-- 문화체육사용분 (30%) -->
+            <div class="input-group">
+                <label>문화체육사용분 (30%)</label>
+                <div class="input-box">
+                    <input type="text" id="cultureInput" value="1,000,000" oninput="formatNumber(this); calculate();">
+                    <span style="font-size:13px; color:#64748b; margin-left:4px;">원</span>
+                </div>
+                <input type="range" class="range-slider" id="cultureRange" min="0" max="10000000" step="100000" value="1000000" oninput="syncInput('culture', this.value)">
+                <div class="range-caption">도서·공연·박물관·미술관 등</div>
+            </div>
+
+            <!-- 대중교통이용분 (80%) -->
+            <div class="input-group">
+                <label>대중교통이용분 (80%)</label>
+                <div class="input-box">
+                    <input type="text" id="transitInput" value="1,200,000" oninput="formatNumber(this); calculate();">
+                    <span style="font-size:13px; color:#64748b; margin-left:4px;">원</span>
+                </div>
+                <input type="range" class="range-slider" id="transitRange" min="0" max="10000000" step="100000" value="1200000" oninput="syncInput('transit', this.value)">
+                <div class="range-caption">버스, 지하철, 기차 등</div>
+            </div>
+
+            <!-- 전통시장사용분 (40%) -->
+            <div class="input-group">
+                <label>전통시장사용분 (40%)</label>
+                <div class="input-box">
+                    <input type="text" id="marketInput" value="1,500,000" oninput="formatNumber(this); calculate();">
+                    <span style="font-size:13px; color:#64748b; margin-left:4px;">원</span>
+                </div>
+                <input type="range" class="range-slider" id="marketRange" min="0" max="10000000" step="100000" value="1500000" oninput="syncInput('market', this.value)">
+                <div class="range-caption">전통시장 가맹점 사용액</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상세 분석 리포트 -->
+    <div class="section-card">
+        <div class="section-title">
+            📊 상세 분석 리포트
+        </div>
+        <div class="report-table">
+            <div class="report-row">
+                <span>총급여액의 25% 최저사용 문턱 금액</span>
+                <span id="reportMinSpend">12,500,000 원</span>
+            </div>
+            <div class="report-row">
+                <span>총 카드 지출 합계 (신용+체크+문화+교통+시장)</span>
+                <span id="reportTotalUsage">323,700,000 원</span>
+            </div>
+            <div class="report-row">
+                <span>공제 대상 산출 금액 (각 공제율 반영)</span>
+                <span id="reportBeforeLimit">35,460,000 원</span>
+            </div>
+            <div class="report-row">
+                <span>법정 기본 공제 한도 적용</span>
+                <span id="reportLegalLimit">3,000,000 원 (추가한도 별도)</span>
+            </div>
+            <div class="report-row highlight">
+                <span>최종 예상 소득공제액</span>
+                <span id="reportFinalDeduction">3,000,000 원</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 핵심 포인트 및 맞벌이 부부 절세 팁 -->
+    <div class="tip-box">
+        <h4>💡 연말정산 핵심 포인트 & 맞벌이 부부 절세 팁</h4>
+        <ul>
+            <li><b>최저사용금액 25%의 법칙:</b> 총급여의 25%까지는 공제 혜택이 없으므로, 할인·적립 혜택이 좋은 신용카드를 먼저 사용하여 문턱을 채우는 것이 유리합니다.</li>
+            <li><b>맞벌이 부부 지출 집중 전략:</b> 총급여가 **적은 배우자**의 카드로 25% 최저사용 문턱을 먼저 넘긴 뒤, 초과분부터는 공제율이 높은 직불카드나 소득이 **많은 배우자**의 카드를 전략적으로 사용하여 세액 환급 효과를 극대화하세요.</li>
+            <li><b>추가 공제 한도 활용:</b> 전통시장, 대중교통, 문화체육 사용분은 기본 한도와 별개로 각각 최대 100만 원까지 추가 공제를 받을 수 있습니다.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    function formatNumber(input) {
+        let value = input.value.replace(/[^0-9]/g, '');
+        if (value) {
+            value = Number(value).toLocaleString('ko-KR');
+        }
+        input.value = value;
+    }
+
+    function getNum(id) {
+        const val = document.getElementById(id).value.replace(/,/g, '');
+        return Number(val) || 0;
+    }
+
+    function syncInput(type, val) {
+        document.getElementById(type + 'Input').value = Number(val).toLocaleString('ko-KR');
+        calculate();
+    }
+
+    function calculate() {
+        const salary = getNum('salaryInput');
+        const credit = getNum('creditInput');
+        const check = getNum('checkInput');
+        const culture = getNum('cultureInput');
+        const transit = getNum('transitInput');
+        const market = getNum('marketInput');
+
+        // 슬라이더 싱크
+        if(document.getElementById('salaryRange')) document.getElementById('salaryRange').value = salary;
+        if(document.getElementById('creditRange')) document.getElementById('creditRange').value = credit;
+        if(document.getElementById('checkRange')) document.getElementById('checkRange').value = check;
+        if(document.getElementById('cultureRange')) document.getElementById('cultureRange').value = culture;
+        if(document.getElementById('transitRange')) document.getElementById('transitRange').value = transit;
+        if(document.getElementById('marketRange')) document.getElementById('marketRange').value = market;
+
+        const minSpend = salary * 0.25;
+        const totalUsage = credit + check + culture + transit + market;
+
+        // 최저사용액 차감 순서 가정 (신용카드 -> 체크 -> 문화 -> 대중교통 -> 전통시장 순)
+        let remainingMin = minSpend;
+
+        let usedCredit = Math.max(0, credit - remainingMin);
+        remainingMin = Math.max(0, remainingMin - credit);
+
+        let usedCheck = Math.max(0, check - remainingMin);
+        remainingMin = Math.max(0, remainingMin - check);
+
+        let usedCulture = Math.max(0, culture - remainingMin);
+        remainingMin = Math.max(0, remainingMin - culture);
+
+        let usedTransit = Math.max(0, transit - remainingMin);
+        remainingMin = Math.max(0, remainingMin - transit);
+
+        let usedMarket = Math.max(0, market - remainingMin);
+
+        // 공제율 적용 (신용 15%, 직불/현금 30%, 문화체육 30%, 대중교통 80%, 전통시장 40%)
+        let deduction = (usedCredit * 0.15) + 
+                        (usedCheck * 0.30) + 
+                        (usedCulture * 0.30) + 
+                        (usedTransit * 0.80) + 
+                        (usedMarket * 0.40);
+
+        if (deduction < 0) deduction = 0;
+
+        // 법정 기본 공제 한도 (총급여 기준)
+        let baseLimit = 3000000;
+        if (salary > 70000000 && salary <= 120000000) {
+            baseLimit = 2500000;
+        } else if (salary > 120000000) {
+            baseLimit = 2000000;
+        }
+
+        // 추가 한도 합산 (전통시장 100만, 대중교통 100만, 문화 100만 등 최대 300만)
+        let finalDeduction = Math.min(deduction, baseLimit + 3000000);
+
+        // 화면 반영
+        document.getElementById('reportMinSpend').innerText = minSpend.toLocaleString('ko-KR') + ' 원';
+        document.getElementById('reportTotalUsage').innerText = totalUsage.toLocaleString('ko-KR') + ' 원';
+        document.getElementById('reportBeforeLimit').innerText = Math.round(deduction).toLocaleString('ko-KR') + ' 원';
+        document.getElementById('reportLegalLimit').innerText = baseLimit.toLocaleString('ko-KR') + ' 원 (추가한도 별도)';
+        
+        const finalFormatted = Math.round(finalDeduction).toLocaleString('ko-KR') + ' 원';
+        document.getElementById('totalDeductionText').innerText = finalFormatted;
+        document.getElementById('reportFinalDeduction').innerText = finalFormatted;
+    }
+
+    // 초기 실행
+    calculate();
+</script>
+
+</body>
+</html>
